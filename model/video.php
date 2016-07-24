@@ -132,6 +132,8 @@ public function addvideo($data) {
 
 	public function editvideo($video_id, $data) {
 
+print_r($video_id); print_r($data);die();
+
 		$this->db->query("UPDATE " . DB_PREFIX . "video SET status = '" . $this->db->escape($data['status']) . "', sort_order = '" . $this->db->escape($data['sort_order']) . "', date_modified = NOW() WHERE video_id = '" . (int)$video_id . "'");
 
 
