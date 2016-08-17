@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8' />
+<link href='../fullcalendar.css' rel='stylesheet' />
+<link href='../fullcalendar.print.css' rel='stylesheet' media='print' />
+<script src='../lib/moment.min.js'></script>
+<script src='../lib/jquery.min.js'></script>
+<script src='../fullcalendar.min.js'></script>
+<script>
+
+	$(document).ready(function() {
+		
+		$('#calendar').fullCalendar({
+			header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
+			},
+			 
+			selectable: true,
+			selectHelper: false,
+
+   
+       dayRender: function( date, cell ) { 
+
+          var today = moment();
+          var past = date.diff(today,'days');
+          past = parseInt(past);
+        
+          if(past > - 1) {
+          $(cell).css({ 'font-size' : '16px !important;' , 'background' : '#e6f7cc' });	
+    
+          }
+   
+
+       },
+
+	 
+	viewRender: function(currentView){
+
+		var minDate = moment(),
+		maxDate = moment().add(2,'weeks');
+		// Past
+		if (minDate >= currentView.start && minDate <= currentView.end) {
+			$(".fc-prev-button").prop('disabled', true); 
+			$(".fc-prev-button").addClass('fc-state-disabled'); 
+		}
+		else {
+			$(".fc-prev-button").removeClass('fc-state-disabled'); 
+			$(".fc-prev-button").prop('disabled', false); 
+		}
+ 
+	},
+
+
+
+ 
+	  
+
+			select: function(start, end) {
+
+   
+           //if (start.add('days', 7).date() != end.date() ){
+
+          var today = moment();
+          var past = start.diff(today,'days');
+          past = parseInt(past);
+
+           if( past < -1 ) {
+
+             //User has selected Past Day's
+             $('#calendar').fullCalendar('unselect');
+             alert("You can not select past day's");
+
+           } else {
+           if ( end.diff(start, 'days') > 7 ){
+           alert("You can not select more than 7 day's");	
+           $('#calendar').fullCalendar('unselect');
+           } else {
+
+            //Add Event 
+
+                var title = prompt('Event Title:');
+				var eventData;
+				if (title) {
+					eventData = {
+						title: title,
+						start: start,
+						end: end
+					};
+					$('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+				}
+
+
+
+
+           }
+           }
+ 
+
+			},
+			editable: true,
+			eventLimit: true, // allow "more" link when too many events
+			events: [
+				{
+					title: 'All Day Event',
+					start: '2015-02-01'
+				},
+ 
+			]
+		});
+		
+	});
+
+
+function objToString (obj) {
+    var str = '';
+    for (var p in obj) {
+        if (obj.hasOwnProperty(p)) {
+            str += p + '::' + obj[p] + '\n';
+        }
+    }
+    return str;
+}
+
+</script>
+<style>
+
+	body {
+		margin: 40px 10px;
+		padding: 0;
+		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+		font-size: 14px;
+	}
+
+	#calendar {
+		max-width: 900px;
+		margin: 0 auto;
+	}
+
+</style>
+</head>
+<body>
+
+	<div id='calendar'></div>
+
+</body>
+</html>
+
+

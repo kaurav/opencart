@@ -1,0 +1,276 @@
+var strict = false;
+var Eslider = null;
+
+
+var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
+
+var monthNamesShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+
+var  rvalues = [
+"12:00 AM","12:30 AM","01:00 AM","01:30 AM","02:00 AM","02:30 AM","03:00 AM","03:30 AM","04:00 AM","04:30 AM","05:00 AM","05:30 AM","06:00 AM","06:30 AM","7:00 AM","07:30 AM","08:00 AM","08:30 AM","09:00 AM","09:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","12:00 PM",
+"12:30 PM","01:00 PM","01:30 PM","02:00 PM","02:30 PM","03:00 PM","03:30 PM","04:00 PM","04:30 PM","05:00 PM","05:30 PM","06:00 PM","06:30 PM","07:00 PM","07:30 PM","08:00 PM","08:30 PM","09:00 PM","09:30 PM","10:00 PM","10:30 PM","11:00 PM","11:30 PM","11:59 PM"
+];
+
+
+
+
+function myfullcalendar(el,isHome,module) {
+
+
+
+	var date = new Date();
+	var d = date.getDate();
+	var m = date.getMonth();
+	var y = date.getFullYear();
+
+	$(el).fullCalendar({
+		 // events: source,
+
+
+	buttonIcons:  {
+		prev: 'left-single-arrow',
+		next: 'right-single-arrow',
+		prevYear: 'left-double-arrow',
+		nextYear: 'right-double-arrow'
+	},
+
+
+
+	header: {
+		left: (isHome) ? 'prev' : 'prev,next ', //today
+		center: 'title',
+		right: (isHome) ? 'next' : 'month',//'month,agendaWeek'
+	},
+
+	aspectRatio : 3,
+	defaultView: (isHome) ? 'month' : 'month' , 
+	weekMode:'liquid',
+	liquid:false,
+
+	contentHeight: (isHome) ? 200 :  600,
+	// contentHeight: 'auto',
+
+	height : (isHome) ? 200 :  600, // set height to auto or fix width of 100 || 200 in home
+	// height : 'auto', 
+	eventLimit : 1, 
+	selectable: true,
+	editable : false,
+	droppable : false,
+	selectHelper: false,
+	allDaySlot : true,
+	allDayText : "Any Time",
+	slotDuration : "00:60:00",
+	slotEventOverlap : true,
+	fixedWeekCount : false,
+	weekNumbers : false,
+	eventLimit: 1, 
+	timeFormat: 'h:mma',
+	displayEventEnd  : true,
+	eventStartEditable : false,
+	//minTime  : "06:00:00",
+	//maxTime :  "24:00:00",
+
+
+
+	viewDisplay: function(view) {
+		// Add onclick to header columns of weekView to navigate to clicked day on dayView
+
+
+		$(document).find('.fc-week').html("");
+
+
+	},
+
+
+
+	eventRender: function(event, element, monthView) {
+		var dataToFind = moment(event.start).format('YYYY-MM-DD');
+		$("td[data-date='"+dataToFind+"']").addClass('dayWithEvent');
+
+
+
+	},
+
+
+
+
+	dayRender: function( date, cell ) { 
+
+		// var today = moment();
+		// var past = date.diff(today,'days');
+		// past = parseInt(past);
+
+		// if(past > - 1) {
+		// $(cell).css({ 'font-size' : '16px !important;' , 'background' : '#fff' });  
+
+		// }
+
+
+	},
+
+
+	/*viewRender: function(currentView){
+
+	var minDate = moment(),
+	maxDate = moment().add(2,'weeks');
+	// Past
+	if (minDate >= currentView.start && minDate <= currentView.end) {
+	$(".fc-prev-button").prop('disabled', true); 
+	$(".fc-prev-button").addClass('fc-state-disabled'); 
+	}
+	else {
+	$(".fc-prev-button").removeClass('fc-state-disabled'); 
+	$(".fc-prev-button").prop('disabled', false); 
+	}
+
+	},*/
+
+
+	eventClick: function(calEvent, jsEvent, view) {
+
+	},
+
+
+
+	dayClick: function(date, jsEvent, view, resourceObj) {	
+		 //console.log(date);
+		// console.log(date._d);
+		
+		// console.log(jsEvent);
+		// console.log(view);
+		// console.log(resourceObj);
+			var calenderContainer =  $('#fullcalendar-'+module);
+			calenderContainer.find('.eventlists').hide();
+			calenderContainer.find('.spinner').show();
+			var data = {'day': date._d.getDate(), 'month':date._d.getMonth(), 'year':date._d.getFullYear()};
+			//console.log(data);
+			$.ajax({
+			url: 'index.php?route=module/calander/getallevents',
+			type: 'post',
+			data: data , 
+			dataType: 'json',
+			beforeSend: function() {
+				// $('#cart > button').button('loading');
+			},
+			complete: function() {
+				// $('#cart > button').button('reset');
+			},
+			success: function(json) {
+				$('.alert, .text-danger').remove();
+
+				if (json['redirect']) {
+					location = json['redirect'];
+				}
+
+				if (json['success']) {
+					$('#content').parent().before('<div class="alert alert-success"><i class="fa fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+
+					// Need to set timeout otherwise it wont update the total
+					setTimeout(function () {
+						$('#cart > button').html('<span id="cart-total"><i class="fa fa-shopping-cart"></i> ' + json['total'] + '</span>');
+					}, 100);
+
+					$('html, body').animate({ scrollTop: 0 }, 'slow');
+
+					$('#cart > ul').load('index.php?route=common/cart/info ul li');
+				}
+			},
+			error: function(xhr, ajaxOptions, thrownError) {
+				alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+			}
+		});
+
+			setTimeout(function(){
+			calenderContainer.find('.eventlists').show();
+			calenderContainer.find('.spinner').hide();
+
+			var datee = date._d.getDate()+' '+ monthNamesShort[date._d.getMonth()]+' '+ date._d.getFullYear()
+
+			$('#itehas-'+module).html(datee);
+
+			},1000);
+
+	},
+
+
+
+
+	select: function(start, end, jsEvent, view ) {
+
+
+	},
+
+	editable: false,
+	eventLimit: true, // allow "more" link when too many events
+	
+
+	displayEventTime: true,
+	displayEventEnd : true,
+	events: [
+	
+				{
+					title: 'All Day Event',
+					start: new Date(y, m, 1)
+				},
+				{
+					title: 'Long Event',
+					start: new Date(y, m, d-5),
+					end: new Date(y, m, d-2)
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: new Date(y, m, d-3, 16, 0),
+					allDay: false
+				},
+				{
+					id: 999,
+					title: 'Repeating Event',
+					start: new Date(y, m, d+4, 16, 0),
+					allDay: false
+				},
+				{
+					title: "Meeting",
+
+					start: new Date(y, m, d, 10, 30),
+					allDay: false,
+					description: "This is <br> a cool event <img id='_mjs-object_975' src='http://templates.cms-guide.com/43651/images/1page-img3.jpg' class='' style='height: 97px;'>",
+				},
+				{
+					title: 'Lunch',
+					start: new Date(y, m, d, 12, 0),
+					end: new Date(y, m, d, 14, 0),
+					allDay: false
+				},
+				{
+					title: 'Birthday Party',
+					start: new Date(y, m, d+1, 19, 0),
+					end: new Date(y, m, d+1, 22, 30),
+					allDay: false
+				},
+				{
+					title: 'Click for Google',
+					start: new Date(y, m, 28),
+					end: new Date(y, m, 29),
+					url: 'http://google.com/'
+				}
+			],
+
+	});
+
+}
+
+
+$(document).ready(function() {
+
+	$('#st-enable-nx').change(function(){
+
+		if($(this).is(":checked")){ 
+			$('#st-nx').removeAttr("disabled"); 
+		} else {
+			$('#st-nx').attr("disabled","disabled");
+		}
+
+	});
+
+});
