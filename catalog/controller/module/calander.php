@@ -24,6 +24,28 @@ class ControllerModulecalander extends Controller {
 
 
 
+		/*Get events list starts*/
+		$filter_data = array(
+			'month' => date('n'),
+			'day' => date('d'),
+			'year' => date('Y'),
+		);
+		$getdate = $this->model_catalog_sikhethehas->getdate($filter_data);
+		
+
+
+		$data['event_dates'] = array();
+		if($getdate->num_rows > 0){
+			foreach($getdate->rows as $key => $value ) {
+
+				$data['event_dates'][] = $value['date_available'];
+				
+			}
+		}
+
+		/*get events lists ends*/
+
+
 		/*get current date month events starts*/
 		$filter_data = array(
 			'day' => date('d'),
@@ -31,6 +53,8 @@ class ControllerModulecalander extends Controller {
 		);
 
 		$returndata = $this->model_catalog_sikhethehas->getevents($filter_data);
+		
+
 
 		$data['totaldata'] = array();
 		if($returndata->num_rows > 0){
@@ -59,6 +83,7 @@ class ControllerModulecalander extends Controller {
 
 	/*return detail of event of particular date. from all years*/
 	public function getallevents() {
+		$this->response->addHeader('Content-Type: application/json');
 		$json = array();
 		$this->load->language('module/calander');
 		//echo $_POST['day']."".$_POST['month']."".$_POST['year']; 
@@ -90,8 +115,48 @@ class ControllerModulecalander extends Controller {
 		$json['response'] = $this->load->view('module/calanderevents', $data,true);
 
 
-		$this->response->addHeader('Content-Type: application/json');
+		
 			$this->response->setOutput(json_encode($json));		
+	 }
+
+	 public function geteventslists() {
+	 	$this->response->addHeader('Content-Type: application/json');
+	 	$json = array();
+	 	if(empty($this->request->post['month']) || empty($this->request->post['year'])) {
+	 		$json = array('success' => false, 'msg' => 'Invalid Request!');
+	 		$this->response->setOutput(json_encode($json));
+	 		exit();
+	 	}
+	 	$this->load->language('module/calander');
+		$this->load->model('catalog/sikhethehas');
+
+
+		/*Get events list starts*/
+		$filter_data = array(
+			'month' => $this->request->post['month'],
+			'day' => $this->request->post['day'],
+			'year' => $this->request->post['year'],
+		);
+		$getdate = $this->model_catalog_sikhethehas->getdate($filter_data);
+		
+		$json['success'] = true;
+
+		$json['event_dates'] = array();
+		if($getdate->num_rows > 0){
+			foreach($getdate->rows as $key => $value ) {
+
+				$json['event_dates'][] = $value['date_available'];
+				
+			}
+		}
+
+		/*get events lists ends*/
+
+		
+
+
+			
+		$this->response->setOutput(json_encode($json));		
 	 }
 
 

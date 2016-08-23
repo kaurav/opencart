@@ -11,11 +11,10 @@ class ModelCatalogsikhethehas extends Model {
 		}
 
 		//echo $query1; die();
+
 		return $this->db->query($query1);
 		
-		
 	}
-
 	public function getsikhethehas($sikhethehas_id) {
 		$query = $this->db->query("SELECT DISTINCT *, sd.name AS name, s.image, s.sort_order FROM " . DB_PREFIX . "sikhethehas s LEFT JOIN " . DB_PREFIX . "sikhethehas_description sd ON (s.sikhethehas_id = sd.sikhethehas_id) LEFT JOIN " . DB_PREFIX . "sikhethehas_to_store p2s ON (s.sikhethehas_id = p2s.sikhethehas_id)  WHERE s.sikhethehas_id = '" . (int)$sikhethehas_id . "' AND sd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND s.status = '1' AND s.date_available <= NOW() AND p2s.store_id = '" . (int)$this->config->get('config_store_id') . "'");
 
@@ -265,24 +264,6 @@ class ModelCatalogsikhethehas extends Model {
 		$query = $this->db->query($sql);
 
 		return $query->row['total'];
-	}
-
-
-	public function getdate($data = array()){
-		$sql = "SELECT DISTINCT(date_available) FROM " .DB_PREFIX . "sikhethehas";
-
-		$implode = array();
-		if(!empty($data['year']) && !empty($data['month'])) {
-			$implode[] = "date_format(date_available, '%Y-%c') = '". $this->db->escape($data['year']) ."-". $this->db->escape($data['month']) ."'";
-		}
-
-		if(!empty($implode)) {
-			$sql .= " WHERE ". implode(" AND ", $implode) ." ";
-		}
-
-		// $sql .= "GROUP BY  date_available";
-		
-		return $this->db->query($sql);		
 	}
 
 }
